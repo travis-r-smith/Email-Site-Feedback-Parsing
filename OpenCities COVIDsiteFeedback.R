@@ -1,16 +1,14 @@
-#CoSA COVID Website Feedback
+#COVID Website Feedback
 #READYING THE ENVIRONMENT AND UPLOADING THE MAIN FILE
 #Install Tidyverse to ease removing duplicates and other features
 install.packages("tidyverse")
-#setwd("~/R/InnovatoR")
-setwd("C:/Users/travi/OneDrive/Documents/Data Science/My R Workspace/R Projects/CoSA COVID")
+setwd("~/R/InnovatoR")
 ###READYING THE ENVIRONMENT AND UPLOADING THE MAIN FILE###
 
 #Add Library that enables removing duplicates
 library(tidyverse)
 library(stringr)
 library(dplyr)
-#Set the working Directory to RVeraAuto folder on G:Drive
 getwd()
 
 #Store current datetime as 'now' to use in file name
@@ -19,7 +17,7 @@ now <- format(Sys.time(), format = "%m.%d.%Y.%Hh %Mm %Ss")
 #
 ## Tell R to read the main email export file as well as the historical file pre-May13
 # from the directory.
-original_main_df <- read.csv("opencitiesCOVIDmail.csv", na.strings=c(""," ","NA"), stringsAsFactors=FALSE )
+original_main_df <- read.csv("ocCOVIDmail.csv", na.strings=c(""," ","NA"), stringsAsFactors=FALSE )
 # Can do code for historical file as time allows
 
 #### Re-Run Code from HERE ####
@@ -35,27 +33,23 @@ dim(main_df)
 # but do not contain valuable information.
 
 
-head(main_df$ï..Date)
+head(main_df$ï¿½..Date)
 names(main_df)
 main_df <- subset(main_df, select = -c(Subject, From., To., CC.))
 names(main_df)
 
-head(main_df$ï..Date)
-class(main_df$ï..Date)
-
-
-
-
+head(main_df$ï¿½..Date)
+class(main_df$ï¿½..Date)
 
 
 #Convert the datetime field from character to a datetime
-main_df$datetime <- strptime(main_df$ï..Date, format = "%m/%d/%Y %H:%M")
+main_df$datetime <- strptime(main_df$ï¿½..Date, format = "%m/%d/%Y %H:%M")
 main_df$datetime <- as.POSIXct(main_df$datetime)
 head(main_df$datetime)
 class(main_df$datetime)
 
 #Remove the poorly computer-titled character field that contained datetime info
-main_df <- subset(main_df, select = -c(ï..Date))
+main_df <- subset(main_df, select = -c(ï¿½..Date))
 
 #Use the NEW datetime field to create a date field
 main_df$Date <- as.Date(main_df$datetime, format = "%m/%d/%Y" )
@@ -89,7 +83,7 @@ main_df$Body <- gsub("&amp;", "", main_df$Body)
 main_df$Body <- gsub("\n", "", main_df$Body)
 main_df$Body <- gsub("[\"]", "", main_df$Body)
 main_df$Body <- gsub("[']", "", main_df$Body)
-main_df$Body <- gsub("â???T", "", main_df$Body)
+main_df$Body <- gsub("ï¿½???T", "", main_df$Body)
 main_df$Body <- gsub("&quot;", "", main_df$Body)
 main_df$Body <- gsub("\"", "", main_df$Body)
 main_df$Body <- gsub("Hi,You have received feedback for ", "", main_df$Body )
@@ -97,8 +91,8 @@ main_df$Body <- gsub("Did we help you today?", "", main_df$Body )
 main_df$Body <- gsub("Regards.*","", main_df$Body )
 head(main_df$Body)
 
-#â???T"
-#"â???T"
+#ï¿½???T"
+#"ï¿½???T"
 
 
 #Pull everything before "Was this page helpful"  from text string to create a feedback page column
@@ -143,8 +137,6 @@ head(main_df$suggested_improvements)
 
 
 
-
-
 #Pull everything after "email address: "  from text string to create a column for email addresses
 main_df$email <- sub(".*Email Address: ", "\\1" ,main_df$Body)
 main_df$email <- tolower(main_df$email)
@@ -183,7 +175,7 @@ summary(main_df$mult_resp)
 summary(as.factor(main_df$email))
 
 
-
+# Creating a category value based on key strings that identify when people were having trouble locating information
 i1 <- grepl('find', main_df$suggested_improvements) | grepl('looking for', main_df$suggested_improvements) | grepl('searching', main_df$suggested_improvements)
 
 main_df$finding <- NA
@@ -194,6 +186,7 @@ summary(as.factor(main_df$finding))
 main_df$response_len <- nchar(main_df$suggested_improvements)
 head(main_df)
 
+# Creating a category value based on key strings that identify when people need a service or information
 i2 <-
   grepl('help', main_df$suggested_improvements) |
   grepl('assist', main_df$suggested_improvements) |
@@ -206,9 +199,11 @@ main_df$help_asst[i2] <- 'Needs Help or Assistance'
 main_df$help_asst <- as.factor(main_df$help_asst)
 summary(main_df$help_asst)
 
-#main_df[main_df$email == 'dmdelire1732@gmail.com',]
-#which(main_df$email == 'dmdelire1732@gmail.com',)
+#Uncomment to verify results when troubleshooting
+#main_df[main_df$email == 'Rando123@gmail.com',]
+#which(main_df$email == 'Rando123@gmail.com',)
 
+# Creating a category value based on key strings that identify when people were providing feedback on the data presented on the site.
 i3 <- grepl('dash', main_df$suggested_improvements) | grepl('chart', main_df$suggested_improvements) | grepl('graph', main_df$suggested_improvements) | grepl(' line', main_df$suggested_improvements) | grepl('visual', main_df$suggested_improvements)
 main_df$dashboard <- NA
 main_df$dashboard[i3] <- 'Feedback on Visualizations'
@@ -219,6 +214,7 @@ summary(main_df$dashboard)
 
 summary(main_df$helpful)
 
+# Create subset dataframes to help identify, filter, count, analyze, etc. entries based on how they rated the page
 NotHelpfulSub <- main_df[main_df$helpful == "No",]
 YesHelpfulSub <- main_df[main_df$helpful == "Yes",]
 MaybeHelpfulSub <- main_df[main_df$helpful == "Maybe",]
